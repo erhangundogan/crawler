@@ -1,0 +1,4 @@
+(library
+  (name crawler)
+  (public_name crawler)
+  (libraries lwt cohttp-lwt cohttp-lwt-unix lambdasoup))
