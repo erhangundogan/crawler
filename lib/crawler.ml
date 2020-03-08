@@ -1,4 +1,4 @@
-let version = "0.0.1"
+let version = "0.0.2"
 
 module Parser = struct
   open Soup

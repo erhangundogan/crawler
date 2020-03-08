@@ -1,12 +1,18 @@
 # Crawler
 
 Crawl a website to extract some data.
-Currently retrieves the HTML content and extracts anchor links. 
+Currently retrieves the HTML content and extracts anchor links.
 
-Build
-=====
+Install
+=======
 
 ```bash
+$ opam install crawler
+```
+OR 
+```bash
+$ git clone git@github.com:erhangundogan/crawler.git
+$ cd crawler
 $ dune build
 ```
 
