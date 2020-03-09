@@ -7,10 +7,6 @@ Install
 =======
 
 ```bash
-$ opam install crawler
-```
-OR 
-```bash
 $ git clone git@github.com:erhangundogan/crawler.git
 $ cd crawler
 $ dune build
