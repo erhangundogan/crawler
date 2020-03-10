@@ -51,7 +51,7 @@ let cmd =
     `P "Report then via e-mail to Erhan Gundogan <erhan.gundogan at gmail.com>." ]
   in
   Term.(pure run $ ofile $ uri),
-  Term.info "crawler" ~version:Crawler.version ~doc ~man
+  Term.info "crawler" ~version:Crawler.Version.v ~doc ~man
 
 let () =
   match Term.eval cmd with

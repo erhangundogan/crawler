@@ -1,6 +1,6 @@
 (lang dune 2.3)
 (name crawler)
-(version 0.0.2)
+(version 0.1.0)
 (generate_opam_files true)
 
 (source (github erhangundogan/crawler))
@@ -15,7 +15,7 @@
 This library is used to retrieve URI resources and
 extracts some details with HTML parser.")
   (depends
-    (ocaml (>= 4.09.0))
+    (ocaml (>= 4.08.0))
     lwt
     cohttp-lwt
     cohttp-lwt-unix
