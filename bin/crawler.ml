@@ -3,9 +3,7 @@ open Crawler
 open Parser
 
 let print_urls urls =
-  urls
-  |> UrlSet.iter (fun i -> print_endline i)
-  |> fun _ -> Printf.printf "Total links count: %d\n" (UrlSet.cardinal urls)
+  UrlSet.iter (fun i -> print_endline i) urls
 
 let get_urls_with_base uri content =
   content
@@ -14,29 +12,37 @@ let get_urls_with_base uri content =
   |> normalise_urls uri
   |> validate_urls
 
-let save_urls data_file urls =
-  if Option.is_some data_file
-  then Io.save_urls (Option.get data_file) urls
+let save_urls urls_file urls =
+  if Option.is_some urls_file
+  then Io.save_urls (Option.get urls_file) urls >>= fun _ ->
+    Logs.info (fun f -> f "URLs saved to a file: %s" (Option.get urls_file));
+    Lwt.return ()
   else Lwt.return ()
 
 let save_source source_file content =
   if Option.is_some source_file
-  then Io.save_source (Option.get source_file) content
+  then Io.save_source (Option.get source_file) content >>= fun _ ->
+    Logs.info (fun f -> f "Page source saved to a file: %s" (Option.get source_file));
+    Lwt.return ()
   else Lwt.return ()
 
-let request source_file data_file uri =
+let request source_file urls_file is_print uri =
   Http.get uri >>= fun content ->
     let urls = get_urls_with_base uri content in
+    Logs.info (fun f -> f "Total %d URL addresses extracted" (UrlSet.cardinal urls));
     save_source source_file content >>= fun _ ->
-    save_urls data_file urls >>= fun _ ->
-    Lwt.return @@ print_urls urls
+    save_urls urls_file urls >>= fun _ ->
+    Lwt.return @@ if is_print then print_urls urls else ()
 
-let run source_file data_file uri =
-  Lwt_main.run (request source_file data_file uri)
+let run arg_source_file arg_urls_file arg_print_urls arg_uri =
+  Fmt_tty.setup_std_outputs ();
+  Logs.set_level @@ Some Logs.Info;
+  Logs.set_reporter (Logs_fmt.reporter ());
+  Lwt_main.run (request arg_source_file arg_urls_file arg_print_urls arg_uri)
 
 open Cmdliner
 
-let uri =
+let arg_uri =
   let doc = "URI/URL to make a request through either HTTP or HTTPS schemes." in
   let loc: Uri.t Arg.converter =
     let parse s =
@@ -46,29 +52,34 @@ let uri =
   in
   Arg.(required & pos 0 (some loc) None & info [] ~docv:"URI" ~doc)
 
-let source_file =
+let arg_print_urls =
   let doc =
-    "Save URI content into the file specified." in
+    "Print out results (URLs) to the console" in
+  Arg.(value & flag & info ["p"] ~doc)
+
+let arg_source_file =
+  let doc =
+    "Save URI content into the file specified" in
   Arg.(value & opt (some string) None & info ["s"; "source"] ~docv:"FILE" ~doc)
 
-let data_file =
+let arg_urls_file =
   let doc =
-    "Save data content (details) into the file specified" in
-  Arg.(value & opt (some string) None & info ["d"; "data"] ~docv:"FILE" ~doc)
+    "Save results (URLs) into the file specified" in
+  Arg.(value & opt (some string) None & info ["u"; "urls"] ~docv:"FILE" ~doc)
 
 let cmd =
-  let doc = "Retrieve a remote URI content details" in
+  let doc = "Retrieve a remote URI content and extract URLs" in
   let man = [
     `S "DESCRIPTION";
     `P "$(tname) fetches the remote $(i,URI) and then parse HTML content. \
-        Then extracts anchor elements' href attributes to stdout. \
-        The output file for the HTML page can be specified with the \
-        $(b,-s) option and the output file for the page links can be \
-        specified with the $(b,-d) option\ ";
+        Then extracts anchor elements' href attributes. \
+        The output file for the HTML content can be specified with the \
+        $(b,-s) option and the output file for the URLs can be \
+        specified with the $(b,-u) option.";
     `S "BUGS";
     `P "Report then via e-mail to Erhan Gundogan <erhan.gundogan at gmail.com>." ]
   in
-  Term.(pure run $ source_file $ data_file $ uri),
+  Term.(pure run $ arg_source_file $ arg_urls_file $ arg_print_urls $ arg_uri),
   Term.info "crawler" ~version:Crawler.Version.v ~doc ~man
 
 let () =

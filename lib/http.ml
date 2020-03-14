@@ -29,9 +29,16 @@ let get_location headers =
   | Some s -> s
 
 let rec fetch uri =
+  Logs.info (fun f -> f "Fetching: %s" (Uri.to_string uri));
   Client.get uri >>= fun (res, body) ->
     if is_redirection res.status
-    then get_location res.headers |> Uri.of_string |> fetch
+    then
+      get_location res.headers
+      |> fun loc -> Logs.info (fun f ->
+        f "%s is redirecting to %s" (Uri.to_string uri) loc);
+        loc
+      |> Uri.of_string
+      |> fetch
     else
       Body.to_string body >>= fun body ->
         memo uri body res.headers;
