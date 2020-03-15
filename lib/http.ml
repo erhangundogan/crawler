@@ -28,9 +28,17 @@ let get_location headers =
   | None -> failwith "Redirect location not specified!"
   | Some s -> s
 
+let headers =
+  let key_values = [
+    ("user-agent","Crawler/" ^ Version.v);
+    ("accept","text/html");
+    ("accept-language","en-US,en;q=0.5")
+  ] in
+  Cohttp.Header.(add_list (init ()) key_values)
+
 let rec fetch uri =
   Logs.info (fun f -> f "Fetching: %s" (Uri.to_string uri));
-  Client.get uri >>= fun (res, body) ->
+  Client.get ~headers uri >>= fun (res, body) ->
     if is_redirection res.status
     then
       get_location res.headers
