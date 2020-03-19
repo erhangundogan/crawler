@@ -16,15 +16,15 @@ let save_urls urls_file urls =
   if Option.is_some urls_file
   then Io.save_urls (Option.get urls_file) urls >>= fun _ ->
     Logs.info (fun f -> f "URLs saved to a file: %s" (Option.get urls_file));
-    Lwt.return ()
-  else Lwt.return ()
+    Lwt.return_unit
+  else Lwt.return_unit
 
 let save_source source_file content =
   if Option.is_some source_file
   then Io.save_source (Option.get source_file) content >>= fun _ ->
     Logs.info (fun f -> f "Page source saved to a file: %s" (Option.get source_file));
-    Lwt.return ()
-  else Lwt.return ()
+    Lwt.return_unit
+  else Lwt.return_unit
 
 let request source_file urls_file is_print uri =
   Http.get uri >>= fun content ->

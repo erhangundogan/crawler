@@ -1,6 +1,6 @@
 (lang dune 2.3)
 (name crawler)
-(version 0.1.0)
+(version 0.2.3)
 (generate_opam_files true)
 
 (source (github erhangundogan/crawler))

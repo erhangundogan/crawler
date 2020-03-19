@@ -22,13 +22,20 @@ let validate_urls urls =
 let normalise_urls base_uri url_set = match Uri.scheme base_uri with
   | None -> failwith "Please define base_uri arg"
   | Some _ ->
-    let upgrade uri = Uri.with_uri uri
+    let replace uri = Uri.with_uri uri
       ~scheme:(Uri.scheme base_uri)
-      ~host:(Uri.host base_uri) in
+      ~host:(Uri.host base_uri)
+      ~fragment:None
+      ~query:None
+      in
+    let minify uri = Uri.with_uri uri
+      ~fragment:None
+      ~query:None
+    in
     UrlSet.map (fun i ->
       let i_uri = Uri.of_string i in
       let scheme = Uri.scheme i_uri in
       if Option.is_none scheme
-      then Uri.to_string (upgrade i_uri)
-      else i
+      then Uri.to_string (replace i_uri)
+      else Uri.to_string (minify i_uri)
     ) url_set
